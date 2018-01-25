@@ -7,6 +7,7 @@ import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.View;
 
 import java.util.Collections;
@@ -132,7 +133,7 @@ public class LineGraphView extends View {
         mLinePath = new Path();
         mLinePath.moveTo(mLineGraphRect.left, mLineGraphRect.bottom);
 
-        if(isProgressBased){
+        if(this.isProgressBased){
             useProgressBased();
         }else{
             useInstanceBased();
@@ -240,6 +241,7 @@ public class LineGraphView extends View {
             }
         }
 
+
         //Draw final values
 //        float yGoal = mLineGraphRect.bottom - (mTotalValue*mVerticalScale);
 ////        float yProgress = mLineGraphRect.bottom - (mTotalProgress*mVerticalScale);
@@ -247,6 +249,21 @@ public class LineGraphView extends View {
 ////        canvas.drawLine(mLineGraphRect.right, yProgress, mLineGraphRect.right+20,yProgress,mLinePaint);
 //        canvas.drawText(String.valueOf(mTotalValue), mLineGraphRect.right+30, yGoal, mAxisPaint);
 ////        canvas.drawText(String.valueOf(mTotalProgress/60), mLineGraphRect.right+30, yProgress, mAxisPaint);
+    }
+
+    public void setValues(List<Float> dataValues){
+        mValues = dataValues;
+        initPaths();
+    }
+
+
+    public void setProgressBased(boolean isProgressBased){
+        this.isProgressBased = isProgressBased;
+        initPaths();
+    }
+
+    public boolean isProgressBased(){
+        return this.isProgressBased;
     }
 
 //    private void drawLegend(Canvas canvas){
