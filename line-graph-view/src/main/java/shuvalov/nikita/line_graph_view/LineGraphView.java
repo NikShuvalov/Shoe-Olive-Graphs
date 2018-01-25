@@ -7,7 +7,6 @@ import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
-import android.util.Log;
 import android.view.View;
 
 import java.util.Collections;
@@ -32,14 +31,14 @@ public class LineGraphView extends View {
 
 //==================================== Builder Set Variables ==============
     private int mFillColor, mLineColor;
-    private boolean isProgressBased, useAxes; //Determines whether the graph will be progress based or instance based. In other words, if the values accumulate or they are what they are.
+    private boolean isProgressBased, mShowAxes; //Determines whether the graph will be progress based or instance based. In other words, if the values accumulate or they are what they are.
 
-    private LineGraphView(Context context, List<Float> values, int fillColor, int lineColor, boolean progressBased, boolean useAxes) {
+    private LineGraphView(Context context, List<Float> values, int fillColor, int lineColor, boolean progressBased, boolean showAxes) {
         super(context);
         mFillColor = fillColor;
         mLineColor = lineColor;
         isProgressBased = progressBased;
-        this.useAxes = useAxes;
+        mShowAxes = showAxes;
 
         mValues = values;
         mLineGraphRect= new Rect();
@@ -179,7 +178,7 @@ public class LineGraphView extends View {
         super.onDraw(canvas);
         if(mLinePath !=null) {
             drawGraph(canvas);
-            if(useAxes) {
+            if(mShowAxes) {
                 drawAxes(canvas);
             }
 //            drawLegend(canvas);
@@ -266,7 +265,16 @@ public class LineGraphView extends View {
         return this.isProgressBased;
     }
 
-//    private void drawLegend(Canvas canvas){
+    public boolean isShowingAxes() {
+        return mShowAxes;
+    }
+
+    public void setShowAxes(boolean showAxes) {
+        mShowAxes = showAxes;
+        initPaths();
+    }
+
+    //    private void drawLegend(Canvas canvas){
 //        canvas.drawRect(mLegendRect,mWhitePaint);
 //        canvas.drawRect(mLegendRect,mGraphOutlinePaint);
 //

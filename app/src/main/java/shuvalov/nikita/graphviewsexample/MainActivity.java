@@ -1,6 +1,5 @@
 package shuvalov.nikita.graphviewsexample;
 
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,7 +14,7 @@ import java.util.List;
 import shuvalov.nikita.line_graph_view.LineGraphView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
-    private Button mChangeButon;
+    private Button mChangeButton, mAxisToggleButton;
     private FrameLayout mGraphContainer;
     private LineGraphView mLineGraphView;
     private TextView mChartInfo;
@@ -24,14 +23,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         findViews();
         init();
     }
 
     private void findViews(){
         mGraphContainer = findViewById(R.id.graph_container);
-        mChangeButon = findViewById(R.id.change_data_button);
+        mChangeButton = findViewById(R.id.change_data_button);
+        mAxisToggleButton = findViewById(R.id.axis_toggle_button);
         mChartInfo = findViewById(R.id.graph_type_text);
     }
 
@@ -45,13 +44,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .build(this);
         mGraphContainer.addView(mLineGraphView);
         mGraphContainer.setOnClickListener(this);
-        mChangeButon.setOnClickListener(this);
-
+        mChangeButton.setOnClickListener(this);
+        mAxisToggleButton.setOnClickListener(this);
         refreshInfoText();
     }
 
     private void refreshInfoText(){
-        String infoText = "Chart set to:\n" + (mLineGraphView.isProgressBased() ? "Progressive" : "Instance");
+        String infoText = "Chart set to:\n" + (mLineGraphView.isProgressBased() ? "Progressive" : "Instance") + "\n\nClick the chart to toggle";
         mChartInfo.setText(infoText);
     }
 
@@ -72,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.change_data_button:
                 mLineGraphView.setValues(createRandomDummyData(50,200));
                 break;
+            case R.id.axis_toggle_button:
+                mLineGraphView.setShowAxes(!mLineGraphView.isShowingAxes());
         }
         mLineGraphView.invalidate();
         refreshInfoText();
