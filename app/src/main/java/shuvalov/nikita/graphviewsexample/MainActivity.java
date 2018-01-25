@@ -18,13 +18,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         FrameLayout graphContainer = findViewById(R.id.graph_container);
-        boolean random = true;
-        List<Float> dummyData = random ? createRandomDummyData(25, 2000):
-                createLinearDummyData(50, 2000);
+        List<Float> dummyData = createRandomDummyData(50, 10);
 
         graphContainer.addView(new LineGraphView.LineGraphViewBuilder(dummyData)
-                .setFillColor(Color.GREEN)
+                .setFillColor(Color.BLUE)
                 .setLineColor(Color.RED)
+                .includeAxes()
+                .useProgressBased()
                 .build(this));
     }
 
@@ -36,12 +36,4 @@ public class MainActivity extends AppCompatActivity {
         return dummyData;
     }
 
-    private List<Float> createLinearDummyData(int numberOfDataPoints, double ceiling){
-        List<Float> dummyData = new ArrayList<>();
-        float increaseAmount = (float)ceiling/(float)numberOfDataPoints;
-        for(int i = 0; i < numberOfDataPoints; i++){
-            dummyData.add(i* increaseAmount);
-        }
-        return dummyData;
-    }
 }
