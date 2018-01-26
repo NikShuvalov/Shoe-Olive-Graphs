@@ -6,13 +6,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * Created by NikitaShuvalov on 6/13/17.
@@ -29,7 +26,7 @@ public class PieChartView extends View {
     /**
      *
      * @param values The values to be used in creating the pie chart
-     * @param colors The colors used to distinguish each value. Leaving blank will create a list of 50 shades of gray (Sorry, I couldn't help it).
+     * @param colors The colors used to distinguish each value. Leaving blank will create a list of shades of gray
      *
      */
     public PieChartView(Context context, List<Float> values, @Nullable List<Integer> colors) {
@@ -80,6 +77,15 @@ public class PieChartView extends View {
                 Paint p = new Paint();
                 p.setStyle(Paint.Style.FILL);
                 p.setColor(color);
+                mColorPaints.add(p);
+            }
+        }else{
+            for(int i = 0; i < 9; i++){
+                Paint p = new Paint();
+                p.setStyle(Paint.Style.FILL);
+                int v = i %2 == 0 ?
+                        (i+1) *(15+i) : 255 - (i+1) *(15+i);
+                p.setColor(Color.rgb(v, v, v));
                 mColorPaints.add(p);
             }
         }

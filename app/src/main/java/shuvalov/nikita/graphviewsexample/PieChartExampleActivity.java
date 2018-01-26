@@ -34,7 +34,7 @@ public class PieChartExampleActivity extends AppCompatActivity implements View.O
     }
 
     private void initViews(){
-        mPieChartView = new PieChartView(this, createRandomDummyData(),generateRandomColors());
+        mPieChartView = new PieChartView(this, createRandomDummyData(),null);
         mContainer.addView(mPieChartView);
 
         mValueButton.setOnClickListener(this);
