@@ -289,35 +289,35 @@ public class LineGraphView extends View {
 //        canvas.drawLine(x0, y1, x1, y1, mLinePaint);
 //    }
 
-    public static class LineGraphViewBuilder{
+    public static class Builder {
         //Required Params
         private List<Float> mValues;
         private int mFillColor, mLineColor;
         private boolean isProgressBased, useAxes;
 
-        public LineGraphViewBuilder(List<Float> values){
+        public Builder(List<Float> values){
             mValues = values;
             mFillColor = Color.argb(125, 0, 0, 255);
             mLineColor = Color.BLACK;
             isProgressBased = false;
         }
 
-        public LineGraphViewBuilder setFillColor(int color){
+        public Builder setFillColor(int color){
             mFillColor = color;
             return this;
         }
 
-        public LineGraphViewBuilder setLineColor(int color){
+        public Builder setLineColor(int color){
             mLineColor = color;
             return this;
         }
 
-        public LineGraphViewBuilder useProgressBased(){
+        public Builder useProgressBased(){
             isProgressBased = true;
             return this;
         }
 
-        public LineGraphViewBuilder includeAxes(){
+        public Builder includeAxes(){
             useAxes = true;
             return this;
         }

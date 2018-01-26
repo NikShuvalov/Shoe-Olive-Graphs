@@ -1,5 +1,6 @@
 package shuvalov.nikita.graphviewsexample;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,7 +15,7 @@ import java.util.List;
 import shuvalov.nikita.line_graph_view.LineGraphView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
-    private Button mChangeButton, mAxisToggleButton;
+    private Button mChangeButton, mAxisToggleButton, mPieChartButton;
     private FrameLayout mGraphContainer;
     private LineGraphView mLineGraphView;
     private TextView mChartInfo;
@@ -32,11 +33,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mChangeButton = findViewById(R.id.change_data_button);
         mAxisToggleButton = findViewById(R.id.axis_toggle_button);
         mChartInfo = findViewById(R.id.graph_type_text);
+        mPieChartButton = findViewById(R.id.pie_chart_button);
     }
 
     private void init(){
         List<Float> dummyData = createRandomDummyData(50, 10);
-        mLineGraphView = new LineGraphView.LineGraphViewBuilder(dummyData)
+        mLineGraphView = new LineGraphView.Builder(dummyData)
                 .setFillColor(Color.BLUE)
                 .setLineColor(Color.RED)
                 .includeAxes()
@@ -46,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mGraphContainer.setOnClickListener(this);
         mChangeButton.setOnClickListener(this);
         mAxisToggleButton.setOnClickListener(this);
+        mPieChartButton.setOnClickListener(this);
         refreshInfoText();
     }
 
@@ -73,6 +76,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.axis_toggle_button:
                 mLineGraphView.setShowAxes(!mLineGraphView.isShowingAxes());
+                break;
+            case R.id.pie_chart_button:
+                Intent pieChartIntent = new Intent(this, PieChartExampleActivity.class);
+                startActivity(pieChartIntent);
+                break;
         }
         mLineGraphView.invalidate();
         refreshInfoText();

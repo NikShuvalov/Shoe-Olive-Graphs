@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/GraphViewsExample.iml" filepath="$PROJECT_DIR$/GraphViewsExample.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/line-graph-view/line-graph-view.iml" filepath="$PROJECT_DIR$/line-graph-view/line-graph-view.iml" />
+      <module fileurl="file://$PROJECT_DIR$/pie-chart-view/pie-chart-view.iml" filepath="$PROJECT_DIR$/pie-chart-view/pie-chart-view.iml" />
     </modules>
   </component>
 </project>

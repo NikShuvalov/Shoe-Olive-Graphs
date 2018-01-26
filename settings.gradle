@@ -1,1 +1,1 @@
-include ':app', ':line-graph-view'
+include ':app', ':line-graph-view', ':pie-chart-view'

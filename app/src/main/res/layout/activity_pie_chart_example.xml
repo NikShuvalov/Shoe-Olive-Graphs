@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="shuvalov.nikita.graphviewsexample.PieChartExampleActivity">
+
+    <LinearLayout
+        android:id="@+id/button_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true">
+
+        <Button
+            android:id="@+id/change_values_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Change Values"/>
+
+        <Button
+            android:id="@+id/change_colors_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Change Colors"/>
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/pie_chart_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/button_row"/>
+</RelativeLayout>
