@@ -9,11 +9,26 @@ Two libraries to create Line Graph and Pie Chart Views easily.
 ### Including the library
 You can include the dependency using JitPack, directions provided on the page:
 
+https://jitpack.io/#NikShuvalov/Shoe-Olive-Graphs/v0.1.0
 
 --or--
 
-If you already have the JitPack repository included in your root gradle file, just add the following line to your dependencies:
+If you already have the JitPack repository included in your root gradle file:
 
+To include entire library:
+```
+    compile 'com.github.NikShuvalov:Shoe-Olive-Graphs:v0.1.0'
+```
+
+To include only Line Graph sub-library:
+```
+compile 'com.github.NikShuvalov.Shoe-Olive-Graphs:line-graph-view:v0.1.0'
+```
+
+To include only Pie Chart sub-library:
+```
+compile 'com.github.NikShuvalov.Shoe-Olive-Graphs:pie-chart-view:v0.1.0'
+```
 
 ## Line Graphs
 
