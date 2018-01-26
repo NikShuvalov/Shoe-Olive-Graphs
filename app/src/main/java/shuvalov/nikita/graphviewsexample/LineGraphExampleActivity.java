@@ -41,8 +41,6 @@ public class LineGraphExampleActivity extends AppCompatActivity implements View.
     private void init(){
         List<Float> dummyData = createRandomDummyData();
         mLineGraphView = new LineGraphView.Builder(dummyData)
-                .setFillColor(Color.BLUE)
-                .setLineColor(Color.RED)
                 .includeAxes()
                 .useProgressBased()
                 .build(this);

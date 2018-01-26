@@ -297,8 +297,8 @@ public class LineGraphView extends View {
 
         public Builder(List<Float> values){
             mValues = values;
-            mFillColor = Color.argb(125, 0, 0, 255);
-            mLineColor = Color.BLACK;
+            mFillColor = Color.argb(50, 0, 0, 255);
+            mLineColor = Color.argb(125,0,0,0);
             isProgressBased = false;
         }
 
