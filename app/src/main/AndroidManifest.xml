@@ -18,6 +18,8 @@
         </activity>
         <activity android:name=".PieChartExampleActivity">
         </activity>
+        <activity android:name=".LineGraphExampleActivity">
+        </activity>
     </application>
 
 </manifest>

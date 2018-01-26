@@ -1,54 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="shuvalov.nikita.graphviewsexample.MainActivity">
+    tools:context="shuvalov.nikita.graphviewsexample.LineGraphExampleActivity"
+    android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/graph_type_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentTop="true"
-        />
 
-    <LinearLayout
-        android:id="@+id/button_row"
+    <Button
+        android:id="@+id/line_graph_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_alignParentBottom="true">
-        <Button
-            android:id="@+id/change_data_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Change Data"
-            />
+        android:text="Open Line Graph Example"
+        android:layout_margin="12dp"
+        android:padding="8dp"/>
 
-        <Button
-            android:id="@+id/axis_toggle_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Toggle Axis"
-            />
-
-        <Button
-            android:id="@+id/pie_chart_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Open Pie Chart"/>
-
-    </LinearLayout>
-
-
-    <FrameLayout
+    <Button
+        android:id="@+id/pie_chart_button"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/graph_container"
-        android:layout_above="@id/button_row"
-        android:layout_below="@id/graph_type_text"/>
+        android:layout_height="wrap_content"
+        android:text="Open Pie Graph Example"
+        android:layout_margin="12dp"
+        android:padding="8dp"/>
 
-
-</RelativeLayout>
+</LinearLayout>

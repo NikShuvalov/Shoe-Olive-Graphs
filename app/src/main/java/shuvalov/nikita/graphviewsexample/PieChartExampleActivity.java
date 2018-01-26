@@ -34,25 +34,24 @@ public class PieChartExampleActivity extends AppCompatActivity implements View.O
     }
 
     private void initViews(){
-        int n = NUMBER_OF_VALUES;
-        mPieChartView = new PieChartView(this, createRandomDummyData(n, VALUE_CEILING),generateRandomColors(n));
+        mPieChartView = new PieChartView(this, createRandomDummyData(),generateRandomColors());
         mContainer.addView(mPieChartView);
 
         mValueButton.setOnClickListener(this);
         mColorButton.setOnClickListener(this);
     }
 
-    private List<Float> createRandomDummyData(int numberOfDataPoints, double ceiling){
+    private List<Float> createRandomDummyData(){
         List<Float> dummyData = new ArrayList<>();
-        for(int i = 0; i < numberOfDataPoints; i++){
-            dummyData.add((float)(Math.random() * ceiling));
+        for(int i = 0; i < NUMBER_OF_VALUES; i++){
+            dummyData.add((float)(Math.random() * VALUE_CEILING));
         }
         return dummyData;
     }
 
-    private List<Integer> generateRandomColors(int n){
+    private List<Integer> generateRandomColors(){
         List<Integer> colors = new ArrayList<>();
-        for(int i = 0; i < n; i++){
+        for(int i = 0; i < NUMBER_OF_VALUES; i++){
             int r = (int)(Math.random() * 255);
             int g = (int)(Math.random() * 255);
             int b = (int)(Math.random() * 255);
@@ -67,10 +66,10 @@ public class PieChartExampleActivity extends AppCompatActivity implements View.O
     public void onClick(View view) {
         switch(view.getId()){
             case R.id.change_colors_button:
-                mPieChartView.setColors(generateRandomColors(NUMBER_OF_VALUES));
+                mPieChartView.setColors(generateRandomColors());
                 break;
             case R.id.change_values_button:
-                mPieChartView.setValues(createRandomDummyData(NUMBER_OF_VALUES, VALUE_CEILING));
+                mPieChartView.setValues(createRandomDummyData());
                 break;
         }
         mPieChartView.invalidate();
