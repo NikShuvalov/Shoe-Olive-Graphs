@@ -6,32 +6,37 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.LongStream;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * Created by NikitaShuvalov on 6/13/17.
  */
 
 public class PieChartView extends View {
-    private List<Float> mValues;
+    private List<PieGraphable> mGraphables;
     private List<Integer> mColors;
-    private float mTotalValue;
+    private Number mTotalValue;
     private RectF mCircle;
     private Paint mLinePaint;
     private ArrayList<Paint> mColorPaints;
 
+
     /**
      *
-     * @param values The values to be used in creating the pie chart
+     * @param graphables Graphable objects that will be graphed
      * @param colors The colors used to distinguish each value. Leaving blank will create a list of shades of gray
      *
      */
-    public PieChartView(Context context, List<Float> values, @Nullable List<Integer> colors) {
+    public PieChartView(Context context, List<PieGraphable> graphables, @Nullable List<Integer> colors) {
         super(context);
-        mValues = values;
+        mGraphables = graphables;
         mColors = colors;
         init();
     }
@@ -48,11 +53,61 @@ public class PieChartView extends View {
     }
 
     private void calculateTotal(){
-        mTotalValue = 0;
-        for(Float v: mValues){
-            mTotalValue += v;
+        if(mGraphables.isEmpty()){
+            mTotalValue = 0;
+        }else {
+            Number sample = mGraphables.get(0).getValue();
+            if (sample instanceof Long) {
+                getLongTotal(mGraphables);
+            } else if (sample instanceof Integer) {
+                getIntegerTotal(mGraphables);
+            } else if (sample instanceof Double) {
+                getDoubleTotal(mGraphables);
+            } else if (sample instanceof Float) {
+                getFloatTotal(mGraphables);
+            } else {
+                throw new IllegalArgumentException("PieGraphable only accepts Long, Integer, Double or Float");
+            }
         }
     }
+
+    private void getLongTotal(List<PieGraphable> graphables){
+        Long totalValue = 0L;
+        for(PieGraphable graphable : graphables){
+            totalValue += graphable.getValue().longValue();
+        }
+        Log.d(TAG, "getLongTotal: " + totalValue);
+        mTotalValue = totalValue;
+    }
+
+    private void getIntegerTotal(List<PieGraphable> graphables){
+        Integer totalValue = 0;
+        for(PieGraphable graphable : graphables){
+            totalValue += graphable.getValue().intValue();
+        }
+        Log.d(TAG, "getIntegerTotal: " + totalValue);
+        mTotalValue = totalValue;
+    }
+
+    private void getDoubleTotal(List<PieGraphable> graphables){
+        Double totalValue = 0.0;
+        for(PieGraphable graphable : graphables){
+            totalValue += graphable.getValue().doubleValue();
+        }
+        Log.d(TAG, "getDoubleTotal: " + totalValue);
+        mTotalValue = totalValue;
+    }
+
+
+    private void getFloatTotal(List<PieGraphable> graphables){
+        Float totalValue = 0.0f;
+        for(PieGraphable graphable : graphables){
+            totalValue += graphable.getValue().floatValue();
+        }
+        Log.d(TAG, "getFloatTotal: " + totalValue);
+        mTotalValue = totalValue;
+    }
+
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
@@ -66,9 +121,6 @@ public class PieChartView extends View {
                 width*.45f;
         mCircle.set(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
     }
-
-
-
 
     private void prepColors(){
         mColorPaints = new ArrayList<>();
@@ -96,9 +148,9 @@ public class PieChartView extends View {
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         float startAngle = 0;
-        for(int i = 0; i < mValues.size(); i ++){
-            float v = mValues.get(i);
-            float percent = v/ mTotalValue;
+        for(int i = 0; i < mGraphables.size(); i ++){
+            float percent = getPercentage(mGraphables.get(i));
+            Log.d(TAG, "onDraw: percent" + percent);
             float arc =percent * 360f;
             canvas.drawArc(mCircle, startAngle,arc, true, mColorPaints.get(i % mColorPaints.size()));
             canvas.drawArc(mCircle, startAngle,arc, true, mLinePaint);
@@ -106,8 +158,23 @@ public class PieChartView extends View {
         }
     }
 
-    public void setValues(List<Float> values){
-        mValues = values;
+    private float getPercentage(PieGraphable pieGraphable){
+        Number val = pieGraphable.getValue();
+        if(val instanceof Integer){
+            return (float)pieGraphable.getValue().intValue()/mTotalValue.intValue();
+        }else if(val instanceof Long){
+            return (float)((double)pieGraphable.getValue().longValue()/mTotalValue.longValue());
+        }else if(val instanceof Double){
+            return (float)(pieGraphable.getValue().doubleValue()/mTotalValue.doubleValue());
+        }else if(val instanceof Float){
+            return pieGraphable.getValue().floatValue()/mTotalValue.floatValue();
+
+        }
+        return -1.0f;
+    }
+
+    public void setGraphables(List<PieGraphable> graphables){
+        mGraphables = graphables;
         calculateTotal();
     }
 

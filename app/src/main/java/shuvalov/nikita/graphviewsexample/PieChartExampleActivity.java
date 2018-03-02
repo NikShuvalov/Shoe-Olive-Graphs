@@ -9,8 +9,10 @@ import android.widget.FrameLayout;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import shuvalov.nikita.piechartview.PieChartView;
+import shuvalov.nikita.piechartview.PieGraphable;
 
 public class PieChartExampleActivity extends AppCompatActivity implements View.OnClickListener{
     private Button mValueButton, mColorButton;
@@ -41,10 +43,10 @@ public class PieChartExampleActivity extends AppCompatActivity implements View.O
         mColorButton.setOnClickListener(this);
     }
 
-    private List<Float> createRandomDummyData(){
-        List<Float> dummyData = new ArrayList<>();
+    private List<PieGraphable> createRandomDummyData(){
+        List<PieGraphable> dummyData = new ArrayList<>();
         for(int i = 0; i < NUMBER_OF_VALUES; i++){
-            dummyData.add((float)(Math.random() * VALUE_CEILING));
+            dummyData.add(new MyPieGraphables(new Random().nextFloat(), "Hello world"));
         }
         return dummyData;
     }
@@ -69,7 +71,7 @@ public class PieChartExampleActivity extends AppCompatActivity implements View.O
                 mPieChartView.setColors(generateRandomColors());
                 break;
             case R.id.change_values_button:
-                mPieChartView.setValues(createRandomDummyData());
+                mPieChartView.setGraphables(createRandomDummyData());
                 break;
         }
         mPieChartView.invalidate();
