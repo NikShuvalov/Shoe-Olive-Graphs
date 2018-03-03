@@ -76,7 +76,6 @@ public class PieChartView extends View {
         for(PieGraphable graphable : graphables){
             totalValue += graphable.getValue().longValue();
         }
-        Log.d(TAG, "getLongTotal: " + totalValue);
         mTotalValue = totalValue;
     }
 
@@ -85,7 +84,6 @@ public class PieChartView extends View {
         for(PieGraphable graphable : graphables){
             totalValue += graphable.getValue().intValue();
         }
-        Log.d(TAG, "getIntegerTotal: " + totalValue);
         mTotalValue = totalValue;
     }
 
@@ -94,7 +92,6 @@ public class PieChartView extends View {
         for(PieGraphable graphable : graphables){
             totalValue += graphable.getValue().doubleValue();
         }
-        Log.d(TAG, "getDoubleTotal: " + totalValue);
         mTotalValue = totalValue;
     }
 
@@ -104,7 +101,6 @@ public class PieChartView extends View {
         for(PieGraphable graphable : graphables){
             totalValue += graphable.getValue().floatValue();
         }
-        Log.d(TAG, "getFloatTotal: " + totalValue);
         mTotalValue = totalValue;
     }
 
@@ -150,7 +146,6 @@ public class PieChartView extends View {
         float startAngle = 0;
         for(int i = 0; i < mGraphables.size(); i ++){
             float percent = getPercentage(mGraphables.get(i));
-            Log.d(TAG, "onDraw: percent" + percent);
             float arc =percent * 360f;
             canvas.drawArc(mCircle, startAngle,arc, true, mColorPaints.get(i % mColorPaints.size()));
             canvas.drawArc(mCircle, startAngle,arc, true, mLinePaint);

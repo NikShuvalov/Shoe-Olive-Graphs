@@ -6,11 +6,15 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PointF;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.View;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+
+import static android.content.ContentValues.TAG;
 
 
 /**
@@ -18,29 +22,37 @@ import java.util.List;
  */
 
 public class LineGraphView extends View {
-    private List<Float> mValues;
+    private List<LineGraphable> mGraphables;
     private Paint mLinePaint, mFillPaint, mWhitePaint;
     private Paint mLegendGoalPaint, mLegendActualPaint, mGraphOutlinePaint;
     private Path mLinePath;
     private Rect mLineGraphRect, mLegendRect;
     private Paint mTextPaint, mAxisPaint, mAxisLabelPaint;
     private float mAxisTextSize;
-    private float mVerticalScale, mYLabelInterval;
-    private float mTotalValue;
-    private double mMaxValue;
+//    private float mVerticalScale;
+    private Number mPeakValue;
+    private float mYPerPixel; //FixMe?: Might need to be a double to avoid precision loss
 
-//==================================== Builder Set Variables ==============
+//==================================== Builder Set Variables ========================
     private int mFillColor, mLineColor;
-    private boolean isProgressBased, mShowAxes; //Determines whether the graph will be progress based or instance based. In other words, if the values accumulate or they are what they are.
+    private boolean isProgressBased, mShowAxes, mAutoX; //Determines whether the graph will be progress based or instance based. In other words, if the values accumulate or they are what they are.
 
-    private LineGraphView(Context context, List<Float> values, int fillColor, int lineColor, boolean progressBased, boolean showAxes) {
+    //======================================= General Setup =========================================
+    private LineGraphView(Context context,
+                          List<LineGraphable> graphables,
+                          int fillColor,
+                          int lineColor,
+                          boolean progressBased,
+                          boolean showAxes,
+                          boolean autoX) {
         super(context);
+        mAutoX = autoX;
         mFillColor = fillColor;
         mLineColor = lineColor;
         isProgressBased = progressBased;
         mShowAxes = showAxes;
 
-        mValues = values;
+        mGraphables = graphables;
         mLineGraphRect= new Rect();
         mLegendRect = new Rect();
         preparePaints();
@@ -115,7 +127,6 @@ public class LineGraphView extends View {
         mAxisLabelPaint.setTextSize(mAxisTextSize*2);
     }
 
-
     private void initLegendRect(){
         int left = mLineGraphRect.left + (int)(mLineGraphRect.width()*.03);
         int top = mLineGraphRect.top + (int)(mLineGraphRect.height()*.03);
@@ -124,8 +135,10 @@ public class LineGraphView extends View {
         mLegendRect.set(left, top, right, bottom);
     }
 
+
+// ======================================= Lines/Paths ======================================
     private void initPaths(){
-        if(mValues ==null || mValues.size() < 2) {
+        if(mGraphables ==null || mGraphables.size() < 2) {
             return;
         }
 
@@ -143,36 +156,237 @@ public class LineGraphView extends View {
     }
 
     private void useProgressBased(){
-        determineVerticalScale(mLineGraphRect.height() *.9f);
-        float xIntervalSize = mLineGraphRect.width()/ (float)(mValues.size());
-        float yPerPixel = mLineGraphRect.height()/(mTotalValue * 1.1f);
+        getPeakValue(true);
+//        determineVerticalScale(mLineGraphRect.height() *.9f);
+        float xIntervalSize = xPerPixel(mLineGraphRect.width());
         float value = 0;
-        for(int i = 0; i < mValues.size(); i++) {
-            value += mValues.get(i);
-            mLinePath.lineTo(mLineGraphRect.left + xIntervalSize * (i+1), mLineGraphRect.bottom - (yPerPixel * value));
+        for(int i = 0; i < mGraphables.size(); i++) {
+//            value += mGraphables.get(i); //FixMe: Oh god
+            mLinePath.lineTo(mLineGraphRect.left + xIntervalSize * (i+1), mLineGraphRect.bottom - (mYPerPixel * value));
         }
     }
-
-    private void determineVerticalScale(float maxHeight){
-        mTotalValue = 0;
-        for(float value: mValues){
-            mTotalValue+= value;
-        }
-        mVerticalScale = maxHeight/mTotalValue;
-        mYLabelInterval = mTotalValue * 11/40f;
-    }
-
     private void useInstanceBased(){
-        mMaxValue =  Collections.max(mValues);
-        float xIntervalSize = mLineGraphRect.width()/ (float)(mValues.size()-1);
-        float yPerPixel = (float)(mLineGraphRect.height()/(mMaxValue * 1.1f));
-        for(int i = 0; i < mValues.size(); i++){
-            float value = mValues.get(i);
-            mLinePath.lineTo(mLineGraphRect.left + xIntervalSize * i, mLineGraphRect.bottom - yPerPixel * value);
+        getPeakValue(false);
+        plotInstanceLineGraph();
+
+//        determineVerticalScale(mLineGraphRect.height() * .9f);
+//        determineYLabelInterval();
+//        float xIntervalSize = xPerPixel(mLineGraphRect.width());
+//        float yPerPixel = (float)(mLineGraphRect.height()/(mMaxValue * 1.1f));
+//        for(int i = 0; i < mGraphables.size(); i++){
+//            float value = mGraphables.get(i); //FixMe: Oh god this too.
+//            mLinePath.lineTo(mLineGraphRect.left + xIntervalSize * i, mLineGraphRect.bottom - mYPerPixel * value);
+//        }
+    }
+
+    private void plotInstanceLineGraph(){
+        List<PointF> points = new ArrayList<>();
+        createPointsWithYValues(points);
+        attachXValuesToPoints(points);
+        for(int i = 0; i < points.size(); i++){
+            PointF p = points.get(i);
+            mLinePath.lineTo(p.x, p.y);
+        }
+        mLinePath.lineTo(mLineGraphRect.right, mLineGraphRect.bottom);
+    }
+
+    private void createPointsWithYValues(List<PointF> points){
+        Number ySample = mGraphables.get(0).getYValue();
+        if(ySample instanceof Integer){
+            for(LineGraphable graphable : mGraphables){
+                PointF point = new PointF();
+                point.y = mLineGraphRect.bottom - (mYPerPixel * graphable.getYValue().intValue());
+                points.add(point);
+            }
+        }else if(ySample instanceof Float){
+            for(LineGraphable graphable : mGraphables){
+                PointF point = new PointF();
+                point.y = mLineGraphRect.bottom - (mYPerPixel * graphable.getYValue().floatValue());
+                points.add(point);
+            }
+        }else{//Double
+            for(LineGraphable graphable : mGraphables){
+                PointF point = new PointF();
+                point.y = mLineGraphRect.bottom - (mYPerPixel * (float)graphable.getYValue().doubleValue());
+                points.add(point);
+            }
         }
     }
 
+    private void attachXValuesToPoints(List<PointF> points){
+        float xPerPixel = xPerPixel(mLineGraphRect.width());
+        Number xSample = mGraphables.get(0).getXValue();
+        if(xSample instanceof Integer){
+            Integer minValue = mGraphables.get(0).getXValue().intValue();
+            for(int i =0 ; i < mGraphables.size(); i++){
+                LineGraphable graphable = mGraphables.get(i);
+                float x = mLineGraphRect.left + ((graphable.getXValue().intValue() - minValue) * xPerPixel);
+                points.get(i).x = mAutoX ? mLineGraphRect.left + xPerPixel * i:
+                        x;
+            }
+        }else if(xSample instanceof Float){
+            Float minValue = mGraphables.get(0).getXValue().floatValue();
+            for(int i =0 ; i < mGraphables.size(); i++){
+                LineGraphable graphable = mGraphables.get(i);
+                points.get(i).x = mAutoX ? mLineGraphRect.left + xPerPixel * i:
+                        mLineGraphRect.left + ((graphable.getXValue().floatValue() - minValue) * xPerPixel);
+            }
+        }else if (xSample instanceof Double){
+            Double minValue = mGraphables.get(0).getXValue().doubleValue();
+            for(int i =0 ; i < mGraphables.size(); i++){
+                LineGraphable graphable = mGraphables.get(i);
+                points.get(i).x = mAutoX ? mLineGraphRect.left + xPerPixel * i:
+                        mLineGraphRect.left + (float)((graphable.getXValue().doubleValue() - minValue) * xPerPixel);
+            }
+        }
+    }
 
+//    private void determineVerticalScale(float maxHeight){
+//        mVerticalScale = maxHeight/(float)(mPeakValue instanceof Long ?
+//                mPeakValue.longValue() :
+//                mPeakValue instanceof Integer ?
+//                        mPeakValue.intValue() :
+//                        mPeakValue instanceof Double ?
+//                                mPeakValue.doubleValue() :
+//                                mPeakValue.floatValue());
+//    }
+
+    /*
+Explanation: Why 11/40f?
+The VALUE amount of the top of the graph should be 11/10 of the Max VALUE since the Max Value will be positioned at 1/1.1 or 10/11 of the height of the graph,
+AND the INTERVAL AMOUNT should be divided by 4 of that max value. Since that's how many parts we're partitioning it by.
+Ergo: (11/10)/4 = 11/40f
+*/
+    private float determineYLabelInterval(){
+        return (float)(mPeakValue instanceof Integer ?
+                            mPeakValue.intValue() :
+                            mPeakValue instanceof Double ?
+                                    mPeakValue.doubleValue() :
+                                    mPeakValue.floatValue()) * 11/40f;
+    }
+
+    private float xPerPixel(float graphWidth){
+        if(mAutoX){
+            return mLineGraphRect.width()/ (float)(mGraphables.size() - (isProgressBased ? 0 : 1));
+        }
+        LineGraphable maxGraphable = mGraphables.get(mGraphables.size()-1);
+        LineGraphable minGraphable = mGraphables.get(0);
+        Number sample = maxGraphable.getXValue();
+        return graphWidth / (float)(sample instanceof Integer ?
+                                maxGraphable.getXValue().intValue() - minGraphable.getXValue().intValue() :
+                                sample instanceof Float ?
+                                        maxGraphable.getXValue().floatValue() - minGraphable.getXValue().floatValue() :
+                                        maxGraphable.getXValue().doubleValue() - minGraphable.getXValue().doubleValue());
+    }
+
+    private void getPeakValue(boolean isProgressive){
+        if(isProgressive){
+            determineSumPeakValue();
+        }else{
+            determineInstancePeakValue();
+        }
+    }
+
+    private void determineSumPeakValue(){
+        if(mGraphables.isEmpty()){
+            mPeakValue = 0;
+        }else {
+            Number sample = mGraphables.get(0).getYValue();
+            if (sample instanceof Integer) {
+                getIntegerTotal(mGraphables);
+            } else if (sample instanceof Double) {
+                getDoubleTotal(mGraphables);
+            } else if (sample instanceof Float) {
+                getFloatTotal(mGraphables);
+            } else {
+                throw new IllegalArgumentException("LineGraphable only accepts Integer, Double or Float");
+            }
+        }
+    }
+
+    private void determineInstancePeakValue(){
+        if(mGraphables.isEmpty()){
+            mPeakValue = 0;
+        }else {
+            Number sample = mGraphables.get(0).getYValue();
+            if (sample instanceof Integer) {
+                getMaxInteger(mGraphables);
+            } else if (sample instanceof Double) {
+                getMaxDouble(mGraphables);
+            } else if (sample instanceof Float) {
+                getMaxFloat(mGraphables);
+            } else {
+                throw new IllegalArgumentException("LineGraphable only accepts Integer, Double or Float");
+            }
+        }
+    }
+
+    private void getMaxInteger(List<LineGraphable> graphables){
+        int maxValue = Integer.MIN_VALUE;
+        for(LineGraphable graphable : graphables){
+            int xValue = graphable.getYValue().intValue();
+            if(maxValue < xValue){
+                maxValue = xValue;
+            }
+        }
+        mPeakValue = maxValue;
+        mYPerPixel = mLineGraphRect.height()/maxValue *.9f;
+    }
+
+    private void getMaxDouble(List<LineGraphable> graphables){
+        Double maxValue = Double.MIN_VALUE;
+        for(LineGraphable graphable : graphables){
+            double xValue = graphable.getYValue().doubleValue();
+            if(maxValue < xValue){
+                maxValue = xValue;
+            }
+        }
+        mPeakValue = maxValue;
+        mYPerPixel = (float)(mLineGraphRect.height()/maxValue * .9f);
+    }
+
+    private void getMaxFloat(List<LineGraphable> graphables){
+        float maxValue = Float.MIN_VALUE;
+        for(LineGraphable graphable : graphables){
+            float xValue = graphable.getYValue().floatValue();
+            if(maxValue < xValue){
+                maxValue = xValue;
+            }
+        }
+        mPeakValue = maxValue;
+        mYPerPixel = mLineGraphRect.height()/maxValue * .9f;
+    }
+
+    private void getIntegerTotal(List<LineGraphable> graphables){
+        Integer totalValue = 0;
+        for(LineGraphable graphable : graphables){
+            totalValue += graphable.getYValue().intValue();
+        }
+        mPeakValue = totalValue;
+        mYPerPixel = ((float)mLineGraphRect.height()/totalValue) * 1.1f;
+    }
+
+    private void getDoubleTotal(List<LineGraphable> graphables){
+        Double totalValue = 0.0;
+        for(LineGraphable graphable : graphables){
+            totalValue += graphable.getYValue().doubleValue();
+        }
+        mPeakValue = totalValue;
+        mYPerPixel = (float)(mLineGraphRect.height()/totalValue * 1.1);
+    }
+
+
+    private void getFloatTotal(List<LineGraphable> graphables){
+        Float totalValue = 0.0f;
+        for(LineGraphable graphable : graphables){
+            totalValue += graphable.getYValue().floatValue();
+        }
+        mPeakValue = totalValue;
+        mYPerPixel = (float)(mLineGraphRect.height()/totalValue * 1.1);
+    }
+
+
+    //===============================  Draw Methods ================================================
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -195,22 +409,24 @@ public class LineGraphView extends View {
 
     private void drawAxes(Canvas canvas){
         //Draw x Axis lines & values
-        int xIntervalLength = mLineGraphRect.width()/4;
+        float xIntervalLength = mLineGraphRect.width()/4f;
         int left = mLineGraphRect.left;
-        int xIntervalValues = mValues.size()/5;
+        float xIntervalValues = mGraphables.size()/4f;
         float x;
         float y1;
-        for(int i =0; i < 5; i ++) {
+        //FixMe: Right now line graph x-Axis is just marked like an ID or by index of graphable items.
+        for(float i =0f; i < 5; i ++) {
             x = left + (xIntervalLength*i);
             float y0 = mLineGraphRect.bottom;
             if((y1 = mLineGraphRect.bottom + mLineGraphRect.height()/20) >= canvas.getClipBounds().bottom){
                 y1 = (mLineGraphRect.bottom*3 + canvas.getClipBounds().bottom)/4;
             }
             canvas.drawLine(x,y0, x,y1,mGraphOutlinePaint);
-            canvas.drawText(String.valueOf(xIntervalValues * i), x-xIntervalLength/5f,y1 + (y1-y0), mAxisPaint);
+            canvas.drawText(String.valueOf((int)(xIntervalValues * i)), x-xIntervalLength/5f,y1 + (y1-y0), mAxisPaint);
         }
 
         //Draw y Axis lines & values
+        float yInterval = determineYLabelInterval();
         float yIntervalLength = mLineGraphRect.height()/4f;
         float y;
         float x0;
@@ -221,21 +437,16 @@ public class LineGraphView extends View {
             x1 = x0 - 20;
             canvas.drawLine(x0, y, x1, y, mGraphOutlinePaint);
             if(isProgressBased){
-                mYLabelInterval = mTotalValue * 11/40f;
-                String yLabelText = String.valueOf((int)(mYLabelInterval * i));
+                String yLabelText = String.valueOf((int)(yInterval * i));
                 canvas.drawText(yLabelText,x1 - (yLabelText.length()*(int)(mAxisTextSize/1.5)),y + mAxisTextSize/2,mAxisPaint);
-                float totalYValue = mLineGraphRect.bottom - (mTotalValue*mVerticalScale);
-                canvas.drawLine(mLineGraphRect.right, totalYValue, mLineGraphRect.right+20, totalYValue, mLinePaint);
-                canvas.drawText(String.valueOf(mTotalValue), mLineGraphRect.right+30, totalYValue, mAxisPaint);
+
+                //FixMe: If I'm going to do the total value on the right end of the graph, this only needs to be drawn once.
+//                float totalYValue = mLineGraphRect.bottom - (mTotalValue * mVerticalScale);
+//                canvas.drawLine(mLineGraphRect.right, totalYValue, mLineGraphRect.right+20, totalYValue, mLinePaint);
+//                canvas.drawText(String.valueOf(mTotalValue), mLineGraphRect.right+30, totalYValue, mAxisPaint);
             }else{
-                /*
-                    Explanation: Why 11/40f?
-                    The VALUE amount of the top of the graph should be 11/10 of the Max VALUE since the Max Value will be positioned at 1/1.1 or 10/11 of the height of the graph,
-                    AND the INTERVAL AMOUNT should be divided by 4 of that max value. Since that's how many parts we're partitioning it by.
-                    Ergo: (11/10)/4 = 11/40f
-                 */
-                mYLabelInterval = (float)mMaxValue * 11/40f;
-                String yLabelText = String.valueOf((int)(mYLabelInterval * i));
+
+                String yLabelText = String.valueOf((int)(yInterval * i));
                 canvas.drawText(yLabelText,x1 - (yLabelText.length()*(int)(mAxisTextSize/1.5)),y + mAxisTextSize/2,mAxisPaint);
             }
         }
@@ -250,31 +461,7 @@ public class LineGraphView extends View {
 ////        canvas.drawText(String.valueOf(mTotalProgress/60), mLineGraphRect.right+30, yProgress, mAxisPaint);
     }
 
-    public void setValues(List<Float> dataValues){
-        mValues = dataValues;
-        initPaths();
-    }
-
-
-    public void setProgressBased(boolean isProgressBased){
-        this.isProgressBased = isProgressBased;
-        initPaths();
-    }
-
-    public boolean isProgressBased(){
-        return this.isProgressBased;
-    }
-
-    public boolean isShowingAxes() {
-        return mShowAxes;
-    }
-
-    public void setShowAxes(boolean showAxes) {
-        mShowAxes = showAxes;
-        initPaths();
-    }
-
-    //    private void drawLegend(Canvas canvas){
+//    private void drawLegend(Canvas canvas){
 //        canvas.drawRect(mLegendRect,mWhitePaint);
 //        canvas.drawRect(mLegendRect,mGraphOutlinePaint);
 //
@@ -289,14 +476,49 @@ public class LineGraphView extends View {
 //        canvas.drawLine(x0, y1, x1, y1, mLinePaint);
 //    }
 
+
+
+    //==================================== Set Methods =============================================
+
+    public void setGraphables(List<LineGraphable> dataValues){
+        mGraphables = dataValues;
+        initPaths();
+    }
+
+    public void setProgressBased(boolean isProgressBased){
+        this.isProgressBased = isProgressBased;
+        initPaths();
+    }
+
+
+    public void setShowAxes(boolean showAxes) {
+        mShowAxes = showAxes;
+        initPaths();
+    }
+
+// ================================ Getters ==================================================
+
+    public boolean isProgressBased(){
+        return this.isProgressBased;
+    }
+
+    public boolean isShowingAxes() {
+        return mShowAxes;
+    }
+
+
     public static class Builder {
         //Required Params
-        private List<Float> mValues;
+        private List<LineGraphable> mGraphables;
         private int mFillColor, mLineColor;
-        private boolean isProgressBased, useAxes;
+        private boolean isProgressBased, useAxes, autoX;
 
-        public Builder(List<Float> values){
-            mValues = values;
+        /**
+         *
+         * @param graphables Should be sorted by xValue if autoX isn't set
+         */
+        public Builder(List<LineGraphable> graphables){
+            mGraphables = graphables;
             mFillColor = Color.argb(50, 0, 0, 255);
             mLineColor = Color.argb(125,0,0,0);
             isProgressBased = false;
@@ -322,8 +544,17 @@ public class LineGraphView extends View {
             return this;
         }
 
+        public boolean isAutoX() {
+            return autoX;
+        }
+
+        public Builder setAutoX(boolean autoX) {
+            this.autoX = autoX;
+            return this;
+        }
+
         public LineGraphView build(Context context) {
-            return new LineGraphView(context, mValues, mFillColor, mLineColor, isProgressBased, useAxes);
+            return new LineGraphView(context, mGraphables, mFillColor, mLineColor, isProgressBased, useAxes, autoX);
         }
     }
 }

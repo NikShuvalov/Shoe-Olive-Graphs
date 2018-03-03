@@ -1,6 +1,5 @@
 package shuvalov.nikita.graphviewsexample;
 
-import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -9,9 +8,12 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Random;
 
 import shuvalov.nikita.line_graph_view.LineGraphView;
+import shuvalov.nikita.line_graph_view.LineGraphable;
 
 public class LineGraphExampleActivity extends AppCompatActivity implements View.OnClickListener{
     private Button mChangeButton, mAxisToggleButton;
@@ -38,11 +40,11 @@ public class LineGraphExampleActivity extends AppCompatActivity implements View.
         mChartInfo = findViewById(R.id.graph_type_text);
     }
 
+
     private void init(){
-        List<Float> dummyData = createRandomDummyData();
+        List<LineGraphable> dummyData = createRandomDummyData();
         mLineGraphView = new LineGraphView.Builder(dummyData)
                 .includeAxes()
-                .useProgressBased()
                 .build(this);
         mGraphContainer.addView(mLineGraphView);
         mGraphContainer.setOnClickListener(this);
@@ -56,10 +58,11 @@ public class LineGraphExampleActivity extends AppCompatActivity implements View.
         mChartInfo.setText(infoText);
     }
 
-    private List<Float> createRandomDummyData(){
-        List<Float> dummyData = new ArrayList<>();
+    private List<LineGraphable> createRandomDummyData(){
+        List<LineGraphable> dummyData = new ArrayList<>();
+        Calendar cal = Calendar.getInstance();
         for(int i = 0; i < NUMBER_OF_VALUES; i++){
-            dummyData.add((float)(Math.random() * VALUE_CEILING));
+            dummyData.add(new MyLineGraphable(i * (i + 5), new Random().nextDouble() * 10));
         }
         return dummyData;
     }
@@ -71,7 +74,7 @@ public class LineGraphExampleActivity extends AppCompatActivity implements View.
                 mLineGraphView.setProgressBased(!mLineGraphView.isProgressBased());
                 break;
             case R.id.change_data_button:
-                mLineGraphView.setValues(createRandomDummyData());
+                mLineGraphView.setGraphables(createRandomDummyData());
                 break;
             case R.id.axis_toggle_button:
                 mLineGraphView.setShowAxes(!mLineGraphView.isShowingAxes());
