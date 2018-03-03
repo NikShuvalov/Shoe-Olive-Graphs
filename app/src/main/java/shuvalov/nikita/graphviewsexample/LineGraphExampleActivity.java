@@ -60,9 +60,8 @@ public class LineGraphExampleActivity extends AppCompatActivity implements View.
 
     private List<LineGraphable> createRandomDummyData(){
         List<LineGraphable> dummyData = new ArrayList<>();
-        Calendar cal = Calendar.getInstance();
         for(int i = 0; i < NUMBER_OF_VALUES; i++){
-            dummyData.add(new MyLineGraphable(i * (i + 5), new Random().nextDouble() * 10));
+            dummyData.add(new MyLineGraphable(i * (i * 5), new Random().nextDouble() * 10));
         }
         return dummyData;
     }

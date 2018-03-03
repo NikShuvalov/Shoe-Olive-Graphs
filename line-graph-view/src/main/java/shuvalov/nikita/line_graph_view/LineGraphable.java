@@ -7,7 +7,7 @@ package shuvalov.nikita.line_graph_view;
 
 /**
  * Allows objects to be graphed to the LineGraphView.
- * The acceptable Number types for the interface are: Integer, Long, Double, Float
+ * The acceptable Number types for the interface are: Integer, Double, Float
  *
  *
  *

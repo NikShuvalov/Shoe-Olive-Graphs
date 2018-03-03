@@ -409,20 +409,22 @@ Ergo: (11/10)/4 = 11/40f
 
     private void drawAxes(Canvas canvas){
         //Draw x Axis lines & values
+        int xDivisions = 4;
         float xIntervalLength = mLineGraphRect.width()/4f;
         int left = mLineGraphRect.left;
-        float xIntervalValues = mGraphables.size()/4f;
+        List<Float> xAxisMilestones = getXAxisLabelValues(mGraphables, xDivisions);
+        float xIntervalValues = mGraphables.size()/4f; //ToDo: Should start at min, and end at max. Divided by 4.
         float x;
         float y1;
         //FixMe: Right now line graph x-Axis is just marked like an ID or by index of graphable items.
-        for(float i =0f; i < 5; i ++) {
+        for(int i =0; i <= xDivisions; i ++) {
             x = left + (xIntervalLength*i);
             float y0 = mLineGraphRect.bottom;
             if((y1 = mLineGraphRect.bottom + mLineGraphRect.height()/20) >= canvas.getClipBounds().bottom){
                 y1 = (mLineGraphRect.bottom*3 + canvas.getClipBounds().bottom)/4;
             }
             canvas.drawLine(x,y0, x,y1,mGraphOutlinePaint);
-            canvas.drawText(String.valueOf((int)(xIntervalValues * i)), x-xIntervalLength/5f,y1 + (y1-y0), mAxisPaint);
+            canvas.drawText(String.valueOf(xAxisMilestones.get(i).intValue()), x-xIntervalLength/5f,y1 + (y1-y0), mAxisPaint);
         }
 
         //Draw y Axis lines & values
@@ -445,7 +447,6 @@ Ergo: (11/10)/4 = 11/40f
 //                canvas.drawLine(mLineGraphRect.right, totalYValue, mLineGraphRect.right+20, totalYValue, mLinePaint);
 //                canvas.drawText(String.valueOf(mTotalValue), mLineGraphRect.right+30, totalYValue, mAxisPaint);
             }else{
-
                 String yLabelText = String.valueOf((int)(yInterval * i));
                 canvas.drawText(yLabelText,x1 - (yLabelText.length()*(int)(mAxisTextSize/1.5)),y + mAxisTextSize/2,mAxisPaint);
             }
@@ -459,6 +460,29 @@ Ergo: (11/10)/4 = 11/40f
 ////        canvas.drawLine(mLineGraphRect.right, yProgress, mLineGraphRect.right+20,yProgress,mLinePaint);
 //        canvas.drawText(String.valueOf(mTotalValue), mLineGraphRect.right+30, yGoal, mAxisPaint);
 ////        canvas.drawText(String.valueOf(mTotalProgress/60), mLineGraphRect.right+30, yProgress, mAxisPaint);
+    }
+
+    private List<Float> getXAxisLabelValues(List<LineGraphable> graphables, int dividors){
+        float minValue = graphables.get(0).getXValue().floatValue();
+//        float minValue = (float)(minNumber instanceof Integer ?
+//                minNumber.intValue() :
+//                minNumber instanceof Double ?
+//                        minNumber.doubleValue() :
+//                        minNumber.floatValue());
+        int lastIndex = graphables.size() - 1;
+        float maxValue = graphables.get(graphables.size() - 1).getXValue().floatValue();
+//        float maxValue = (float)(maxNumber instanceof Integer ?
+//                maxNumber.intValue() :
+//                maxNumber instanceof Double ?
+//                        maxNumber.doubleValue() :
+//                        maxNumber.floatValue());
+        float range = maxValue - minValue;
+        float rangeIntervals = range/dividors;
+        List<Float> xAxisLabelValues = new ArrayList<>();
+        for(int i = 0; i <= dividors; i++){
+            xAxisLabelValues.add(minValue + (rangeIntervals * i));
+        }
+        return xAxisLabelValues;
     }
 
 //    private void drawLegend(Canvas canvas){
