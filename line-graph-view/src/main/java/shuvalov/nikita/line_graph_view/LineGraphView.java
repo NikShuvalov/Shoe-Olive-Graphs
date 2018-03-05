@@ -137,6 +137,34 @@ public class LineGraphView extends View {
         mLegendRect.set(left, top, right, bottom);
     }
 
+    //==================================== Set Methods =============================================
+
+    public void setGraphables(List<LineGraphable> dataValues){
+        if(dataValues != null && dataValues.size() > 1)Collections.sort(dataValues);
+        mGraphables = dataValues;
+        initPaths();
+    }
+
+    public void setProgressBased(boolean isProgressBased){
+        this.isProgressBased = isProgressBased;
+        initPaths();
+    }
+
+    public void setShowAxes(boolean showAxes) {
+        mShowAxes = showAxes;
+        initPaths();
+    }
+
+// ================================ Getters ==================================================
+
+    public boolean isProgressBased(){
+        return this.isProgressBased;
+    }
+
+    public boolean isShowingAxes() {
+        return mShowAxes;
+    }
+
 
 // ======================================= Lines/Paths ======================================
     private void initPaths(){
@@ -376,32 +404,7 @@ Ergo: (11/10)/4 = 11/40f
 //        canvas.drawLine(x0, y1, x1, y1, mLinePaint);
 //    }
 
-    //==================================== Set Methods =============================================
 
-    public void setGraphables(List<LineGraphable> dataValues){
-        mGraphables = dataValues;
-        initPaths();
-    }
-
-    public void setProgressBased(boolean isProgressBased){
-        this.isProgressBased = isProgressBased;
-        initPaths();
-    }
-
-    public void setShowAxes(boolean showAxes) {
-        mShowAxes = showAxes;
-        initPaths();
-    }
-
-// ================================ Getters ==================================================
-
-    public boolean isProgressBased(){
-        return this.isProgressBased;
-    }
-
-    public boolean isShowingAxes() {
-        return mShowAxes;
-    }
 
     //ToDo: Allow user to set axis values with Decimals
     //ToDo: Allow user to have their x axis start at 0 as opposed to using min-value in graphable range as start.
