@@ -12,6 +12,8 @@ import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static android.content.ContentValues.TAG;
@@ -21,6 +23,7 @@ import static android.content.ContentValues.TAG;
  * Created by NikitaShuvalov on 6/14/17.
  */
 
+//FixMe: Negative Y Values leads to graphline flowing UNDER the bounds the graph
 public class LineGraphView extends View {
     private List<LineGraphable> mGraphables;
     private Paint mLinePaint, mFillPaint, mWhitePaint;
@@ -308,7 +311,7 @@ Ergo: (11/10)/4 = 11/40f
 
     private void drawAxes(Canvas canvas){
         //Draw x Axis lines & values
-        int xDivisions = 4; //ToDo: Make this an option for the user to put in as well modular. This value only affect a few things at the moment.
+        int xDivisions = 4; //ToDo: Make this an option for the user to put in as well. Modularity! This value only affect a few things at the moment.
         float xIntervalLength = mLineGraphRect.width()/4f;
         int left = mLineGraphRect.left;
         List<Float> xAxisMilestones = getXAxisLabelValues(mGraphables, xDivisions);
@@ -401,15 +404,23 @@ Ergo: (11/10)/4 = 11/40f
     }
 
     //ToDo: Allow user to set axis values with Decimals
+    //ToDo: Allow user to have their x axis start at 0 as opposed to using min-value in graphable range as start.
+    //ToDo: Handle negative values along y-axis
     public static class Builder {
-        //Required Params
         private List<LineGraphable> mGraphables;
         private int mFillColor, mLineColor;
         private boolean isProgressBased, useAxes, autoX;
 
         /**
+         * The builder will sort the graphables upon building by the xaxis values as they should be ordered. (No need to pre-sort)
          *
-         * @param graphables Should be sorted by xValue if autoX isn't set
+         * Builder options:
+         * FillColor - Fill color of the graph
+         * LineColor - Line color of the graph
+         * IncludeAxes - Whether to include labels on the y and x-axes
+         * AutoX - Set true if you wish the graphView to set the x-axis increments to a uniform value based on size rather than the x values in your LineGraphable.
+         *
+         * @param graphables
          */
         public Builder(List<LineGraphable> graphables){
             mGraphables = graphables;
@@ -438,16 +449,13 @@ Ergo: (11/10)/4 = 11/40f
             return this;
         }
 
-        public boolean isAutoX() {
-            return autoX;
-        }
-
-        public Builder setAutoX(boolean autoX) {
-            this.autoX = autoX;
+        public Builder setAutoX() {
+            this.autoX = true;
             return this;
         }
 
         public LineGraphView build(Context context) {
+            if(mGraphables != null && mGraphables.size() > 1) Collections.sort(mGraphables);
             return new LineGraphView(context, mGraphables, mFillColor, mLineColor, isProgressBased, useAxes, autoX);
         }
     }

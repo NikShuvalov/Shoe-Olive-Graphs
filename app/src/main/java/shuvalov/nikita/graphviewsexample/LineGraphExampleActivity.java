@@ -8,7 +8,6 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
@@ -61,7 +60,8 @@ public class LineGraphExampleActivity extends AppCompatActivity implements View.
     private List<LineGraphable> createRandomDummyData(){
         List<LineGraphable> dummyData = new ArrayList<>();
         for(int i = 0; i < NUMBER_OF_VALUES; i++){
-            dummyData.add(new MyLineGraphable((i * i) + 50, new Random().nextDouble() * 10));
+            int ran = new Random().nextInt(VALUE_CEILING);
+            dummyData.add(new MyLineGraphable(ran - new Random().nextInt(50), new Random().nextDouble() * 10));
         }
         return dummyData;
     }

@@ -1,5 +1,7 @@
 package shuvalov.nikita.graphviewsexample;
 
+import android.support.annotation.NonNull;
+
 import shuvalov.nikita.line_graph_view.LineGraphable;
 
 /**
@@ -24,5 +26,10 @@ public class MyLineGraphable implements LineGraphable<Integer, Double> {
     @Override
     public Double getYValue() {
         return yAxis;
+    }
+
+    @Override
+    public int compareTo(@NonNull LineGraphable lineGraphable) {
+        return xAxis - lineGraphable.getXValue().intValue();
     }
 }
