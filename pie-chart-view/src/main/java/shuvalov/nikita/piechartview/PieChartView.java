@@ -52,54 +52,35 @@ public class PieChartView extends View {
         prepColors();
     }
 
-    private void calculateTotal(){
-        if(mGraphables.isEmpty()){
+    private void calculateTotal() {
+        if (mGraphables.isEmpty()) {
             mTotalValue = 0;
-        }else {
+        } else {
             Number sample = mGraphables.get(0).getValue();
             if (sample instanceof Long) {
                 getLongTotal(mGraphables);
-            } else if (sample instanceof Integer) {
-                getIntegerTotal(mGraphables);
-            } else if (sample instanceof Double) {
-                getDoubleTotal(mGraphables);
-            } else if (sample instanceof Float) {
-                getFloatTotal(mGraphables);
+            } else if (sample instanceof Integer || sample instanceof Double || sample instanceof Float) {
+                getTotal(mGraphables);
             } else {
                 throw new IllegalArgumentException("PieGraphable only accepts Long, Integer, Double or Float");
             }
         }
     }
 
+    //To prevent overflow gonna use averages for the totals since it's the piegraph is relative anyway
     private void getLongTotal(List<PieGraphable> graphables){
         Long totalValue = 0L;
         for(PieGraphable graphable : graphables){
-            totalValue += graphable.getValue().longValue();
+            totalValue += graphable.getValue().longValue()/graphables.size();
         }
         mTotalValue = totalValue;
     }
 
-    private void getIntegerTotal(List<PieGraphable> graphables){
-        Integer totalValue = 0;
-        for(PieGraphable graphable : graphables){
-            totalValue += graphable.getValue().intValue();
-        }
-        mTotalValue = totalValue;
-    }
 
-    private void getDoubleTotal(List<PieGraphable> graphables){
+    private void getTotal(List<PieGraphable> graphables){
         Double totalValue = 0.0;
         for(PieGraphable graphable : graphables){
-            totalValue += graphable.getValue().doubleValue();
-        }
-        mTotalValue = totalValue;
-    }
-
-
-    private void getFloatTotal(List<PieGraphable> graphables){
-        Float totalValue = 0.0f;
-        for(PieGraphable graphable : graphables){
-            totalValue += graphable.getValue().floatValue();
+            totalValue += graphable.getValue().doubleValue()/mGraphables.size();
         }
         mTotalValue = totalValue;
     }
@@ -155,15 +136,12 @@ public class PieChartView extends View {
 
     private float getPercentage(PieGraphable pieGraphable){
         Number val = pieGraphable.getValue();
-        if(val instanceof Integer){
-            return (float)pieGraphable.getValue().intValue()/mTotalValue.intValue();
+        if(val instanceof Integer || val instanceof Double || val instanceof  Float){
+            double averagedValue = pieGraphable.getValue().doubleValue()/mGraphables.size();
+            return (float)(averagedValue/mTotalValue.doubleValue());
         }else if(val instanceof Long){
-            return (float)((double)pieGraphable.getValue().longValue()/mTotalValue.longValue());
-        }else if(val instanceof Double){
-            return (float)(pieGraphable.getValue().doubleValue()/mTotalValue.doubleValue());
-        }else if(val instanceof Float){
-            return pieGraphable.getValue().floatValue()/mTotalValue.floatValue();
-
+            long averagedValue = pieGraphable.getValue().longValue()/mGraphables.size();
+            return averagedValue/(float)mTotalValue.longValue();
         }
         return -1.0f;
     }
