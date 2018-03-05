@@ -46,7 +46,7 @@ public class PieChartExampleActivity extends AppCompatActivity implements View.O
     private List<PieGraphable> createRandomDummyData(){
         List<PieGraphable> dummyData = new ArrayList<>();
         for(int i = 0; i < NUMBER_OF_VALUES; i++){
-            dummyData.add(new MyPieGraphables(Math.abs(new Random().nextLong()), "Hello world"));
+            dummyData.add(new MyPieGraphables(Long.MAX_VALUE, "Hello world"));
         }
         return dummyData;
     }
