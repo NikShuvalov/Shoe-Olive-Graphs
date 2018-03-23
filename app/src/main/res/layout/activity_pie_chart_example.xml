@@ -27,9 +27,9 @@
 
     </LinearLayout>
 
-    <FrameLayout
-        android:id="@+id/pie_chart_container"
+    <shuvalov.nikita.piechartview.PieChartView
+        android:id="@+id/pie_chart_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/button_row"/>
+        android:layout_above="@+id/button_row"/>
 </RelativeLayout>

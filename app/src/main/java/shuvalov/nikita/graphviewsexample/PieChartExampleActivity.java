@@ -16,7 +16,6 @@ import shuvalov.nikita.piechartview.PieGraphable;
 
 public class PieChartExampleActivity extends AppCompatActivity implements View.OnClickListener{
     private Button mValueButton, mColorButton;
-    private FrameLayout mContainer;
     private PieChartView mPieChartView;
 
     private static final int NUMBER_OF_VALUES = 8;
@@ -32,13 +31,12 @@ public class PieChartExampleActivity extends AppCompatActivity implements View.O
     private void findViews(){
         mValueButton = findViewById(R.id.change_values_button);
         mColorButton = findViewById(R.id.change_colors_button);
-        mContainer = findViewById(R.id.pie_chart_container);
+        mPieChartView = findViewById(R.id.pie_chart_view);
     }
 
     private void initViews(){
-        mPieChartView = new PieChartView(this, createRandomDummyData(),null);
-        mContainer.addView(mPieChartView);
-
+        mPieChartView.setGraphables(createRandomDummyData());
+        mPieChartView.setColors(generateRandomColors());
         mValueButton.setOnClickListener(this);
         mColorButton.setOnClickListener(this);
     }

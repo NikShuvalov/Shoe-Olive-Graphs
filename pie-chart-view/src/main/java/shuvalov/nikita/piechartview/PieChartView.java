@@ -5,7 +5,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.os.Build;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 
@@ -41,6 +44,28 @@ public class PieChartView extends View {
         init();
     }
 
+    public PieChartView(Context context) {
+        super(context);
+        init();
+    }
+
+    public PieChartView(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+        init();
+
+    }
+
+    public PieChartView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public PieChartView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+        init();
+    }
+
     private void init(){
         mCircle = new RectF();
         calculateTotal();
@@ -53,16 +78,17 @@ public class PieChartView extends View {
     }
 
     private void calculateTotal() {
-        if (mGraphables.isEmpty()) {
-            mTotalValue = 0;
-        } else {
-            Number sample = mGraphables.get(0).getValue();
-            if (sample instanceof Long) {
-                getLongTotal(mGraphables);
-            } else if (sample instanceof Integer || sample instanceof Double || sample instanceof Float) {
-                getTotal(mGraphables);
-            } else {
-                throw new IllegalArgumentException("PieGraphable only accepts Long, Integer, Double or Float");
+        mTotalValue = 0;
+        if(mGraphables != null) {
+            if (!mGraphables.isEmpty()) {
+                Number sample = mGraphables.get(0).getValue();
+                if (sample instanceof Long) {
+                    getLongTotal(mGraphables);
+                } else if (sample instanceof Integer || sample instanceof Double || sample instanceof Float) {
+                    getTotal(mGraphables);
+                } else {
+                    throw new IllegalArgumentException("PieGraphable only accepts Long, Integer, Double or Float");
+                }
             }
         }
     }
@@ -98,6 +124,7 @@ public class PieChartView extends View {
                 width*.45f;
         mCircle.set(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
     }
+
 
     private void prepColors(){
         mColorPaints = new ArrayList<>();
