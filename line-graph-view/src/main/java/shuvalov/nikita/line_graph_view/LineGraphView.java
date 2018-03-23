@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PathDashPathEffect;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.util.Log;
@@ -29,11 +30,15 @@ public class LineGraphView extends View {
     private Paint mLinePaint, mFillPaint, mWhitePaint;
     private Paint mLegendGoalPaint, mLegendActualPaint, mGraphOutlinePaint;
     private Path mLinePath;
+    private Path mXDividerPath, mYDividerPath;
     private Rect mLineGraphRect, mLegendRect;
     private Paint mTextPaint, mAxisPaint, mAxisLabelPaint;
+    private Paint mDividerPaint;
     private float mAxisTextSize;
     private double mPeakValue;
     private double mYPerPixel;
+
+    private boolean mXValuesAreDivided;
 
 //==================================== Builder Set Variables ========================
     private int mFillColor, mLineColor;
@@ -65,6 +70,12 @@ public class LineGraphView extends View {
         mGraphOutlinePaint.setStyle(Paint.Style.STROKE);
         mGraphOutlinePaint.setColor(Color.BLACK);
         mGraphOutlinePaint.setStrokeWidth(4f);
+
+        mDividerPaint = new Paint();
+        mDividerPaint.setStyle(Paint.Style.STROKE);
+        mDividerPaint.setColor(Color.BLACK);
+        mDividerPaint.setStrokeWidth(2f);
+        mDividerPaint.setPathEffect(new DashPathEffect(new float[]{10,5},0));
 
         mLinePaint = new Paint();
         mLinePaint.setStyle(Paint.Style.STROKE);
@@ -174,13 +185,16 @@ public class LineGraphView extends View {
 
         mLinePath = new Path();
         mLinePath.moveTo(mLineGraphRect.left, mLineGraphRect.bottom);
-
+        checkIfXZeroIsNeeded();
         if(this.isProgressBased){
             useProgressBased();
         }else{
             useInstanceBased();
         }
 
+        if(mXValuesAreDivided){
+            createXDividerLinePath();
+        }
         mLinePath.lineTo(mLineGraphRect.right, mLineGraphRect.bottom);
         mLinePath.close();
     }
@@ -240,6 +254,15 @@ public class LineGraphView extends View {
         }
     }
 
+    private void createXDividerLinePath(){
+        float minValue = mGraphables.get(0).getXValue().floatValue();
+        float xZero = mLineGraphRect.left + (xPerPixel(mLineGraphRect.width()) * Math.abs(minValue));
+        mXDividerPath = new Path();
+        mXDividerPath.moveTo(xZero, mLineGraphRect.bottom);
+        mXDividerPath.lineTo(xZero, mLineGraphRect.top);
+
+    }
+
 
 // ========================================= Scaling/Peak ===============================================
     /*
@@ -259,6 +282,12 @@ Ergo: (11/10)/4 = 11/40f
         LineGraphable maxGraphable = mGraphables.get(mGraphables.size()-1);
         LineGraphable minGraphable = mGraphables.get(0);
         return (float)(graphWidth / (maxGraphable.getXValue().doubleValue() - minGraphable.getXValue().doubleValue()));
+    }
+
+    private void checkIfXZeroIsNeeded() {
+        Number min = mGraphables.get(0).getXValue();
+        Number max = mGraphables.get(mGraphables.size() -1).getXValue();
+        mXValuesAreDivided = min.doubleValue() < 0 && max.doubleValue() > 0;
     }
 
     private void getPeakValue(boolean isProgressive){
@@ -316,6 +345,8 @@ Ergo: (11/10)/4 = 11/40f
         mYPerPixel = mLineGraphRect.height()/totalValue * .9;
     }
 
+
+
     //===============================  Draw Methods ================================================
     @Override
     protected void onDraw(Canvas canvas) {
@@ -335,6 +366,9 @@ Ergo: (11/10)/4 = 11/40f
         canvas.drawPath(mLinePath, mFillPaint);
         canvas.drawPath(mLinePath, mLinePaint);
         canvas.drawRect(mLineGraphRect, mGraphOutlinePaint);
+        if(mXValuesAreDivided){
+            canvas.drawPath(mXDividerPath, mDividerPaint);
+        }
     }
 
     private void drawAxes(Canvas canvas){
